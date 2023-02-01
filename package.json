@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "firebase": "^9.16.0",
+    "mysql": "^2.18.1"
+  },
+  "scripts": {
+    "start": "nodemon ./boot/server.js"
+  }
+}
