@@ -6,6 +6,7 @@
     "mysql": "^2.18.1"
   },
   "scripts": {
-    "start": "nodemon ./boot/server.js"
+    "start": "nodemon ./boot/server.js",
+    "test": "node ./test/test.js"
   }
 }
