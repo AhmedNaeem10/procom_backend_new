@@ -83,32 +83,39 @@ exports.getUsers = (req, res) => {
 exports.teamRegister = (req, res) => {
     try {
         const { teamLead, teamName, numOfMembers, compId, totalFee, paymentMethod, paymentReference, ambassador_id } = req.body;
+        connection.beginTransaction();
         let sql = `INSERT INTO team VALUES(${numOfMembers}, '${teamName}', '${teamLead}');`;
         connection.query(sql, (err, result) => {
             if (err) {
+                connection.rollback();
                 res.json({ code: 400, data: err.message })
             } else {
                 sql = `INSERT INTO payment VALUES('${PAYMENT.PENDING}', '${paymentMethod}', '${paymentReference}', ${compId}, ${teamLead});`;
                 connection.query(sql, (err, result) => {
                     if (err) {
+                        connection.rollback();
                         res.json({ code: 400, data: err.message })
                     } else {
                         sql = `INSERT INTO registrations(totalfee, competitionid, teamlead, qrcode) VALUES(${totalFee}, ${compId}, ${teamLead}, ${'QRCODE'});`
                         connection.query(sql, (err, result) => {
-                            let regid = result.insertId;
                             if (err) {
+                                connection.rollback();
                                 res.json({ code: 400, data: err.message })
                             } else {
+                                let regid = result.insertId;
                                 if (ambassador_id) {
                                     sql = `INSERT INTO ambassador_data(ambassador_id, date_time, reg_id, collected) VALUES(${ambassador_id}, '${new Date().toISOString()}', ${regid}, false);`;
                                     connection.query(sql, (err, result) => {
                                         if (err) {
+                                            connection.rollback();
                                             res.json({ code: 400, data: err.message })
                                         } else {
+                                            connection.commit();
                                             res.json({ code: 200, data: CONSTANTS.TEAM_REGISTRATION })
                                         }
                                     });
                                 } else {
+                                    connection.commit();
                                     res.json({ code: 200, data: CONSTANTS.TEAM_REGISTRATION })
                                 }
                             }
