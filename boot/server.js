@@ -1,8 +1,9 @@
 const express = require("express");
 const { initializeApp } = require("firebase/app");
 const { boot } = require('../utils/utils');
+const cors = require('cors');
 const { login, register, getUser, teamRegister, getUsers, getUserCompetitions, getUserByEmail } = require('../controllers/user');
-const { getAmbassadorDetails, paymentCollected } = require('../controllers/ambassador');
+const { getAmbassadorDetails, isPaymentCollected, collectPayment } = require('../controllers/ambassador');
 const { getCompetitions } = require('../controllers/competition');
 
 const { firebaseConfig } = require('../database/firebase/FirebaseConfig');
@@ -13,7 +14,11 @@ require("dotenv").config();
 
 const app = express();
 
-app.use(express.json(0));
+app.use(express.json());
+
+app.use(cors({
+    origin: '*'
+}));
 
 app.post('/login', login);
 
@@ -25,9 +30,11 @@ app.post('/teamRegister', teamRegister);
 
 app.get('/allUsers', getUsers);
 
-app.get('/ambassadorsData', getAmbassadorDetails)
+app.get('/ambassadorsData', getAmbassadorDetails);
 
-app.put('/paymentCollected/:ambassador_id', paymentCollected);
+app.put('/collectPayment', collectPayment);
+
+app.put('/paymentCollected/:ambassador_id', isPaymentCollected);
 
 app.get('/getUserCompetitions/:userid', getUserCompetitions);
 

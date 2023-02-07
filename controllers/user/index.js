@@ -4,6 +4,7 @@ const { CONSTANTS, PAYMENT, connection } = require('../index')
 exports.login = (req, res) => {
     try {
         const { email, password } = req.body;
+        console.log(email, password);
         const auth = getAuth();
         signInWithEmailAndPassword(auth, email, password)
             .then(async (cred) => {
@@ -14,7 +15,7 @@ exports.login = (req, res) => {
                     if (err) {
                         res.json({ code: 400, data: err.message });
                     } else {
-                        res.json({ code: 200, data: {token, isVerified, ...result[0]} })
+                        res.json({ code: 200, data: { token, isVerified, ...result[0] } })
                     }
                 });
             })
@@ -96,6 +97,7 @@ exports.teamRegister = (req, res) => {
                         connection.rollback();
                         res.json({ code: 400, data: err.message })
                     } else {
+                        // payment api
                         sql = `INSERT INTO registrations(totalfee, competitionid, teamlead, qrcode) VALUES(${totalFee}, ${compId}, ${teamLead}, ${'QRCODE'});`
                         connection.query(sql, (err, result) => {
                             if (err) {
@@ -110,8 +112,45 @@ exports.teamRegister = (req, res) => {
                                             connection.rollback();
                                             res.json({ code: 400, data: err.message })
                                         } else {
-                                            connection.commit();
-                                            res.json({ code: 200, data: CONSTANTS.TEAM_REGISTRATION })
+                                            sql = `SELECT * FROM ambassador_payment WHERE ambassador_id=${ambassador_id}`
+                                            connection.query(sql, (err, result) => {
+                                                if (err) {
+                                                    connection.rollback();
+                                                    res.json({ code: 400, data: err.message })
+                                                } else {
+                                                    if (!result.length) {
+                                                        sql = `INSERT INTO ambassador_payment VALUES(${ambassador_id}, ${totalFee})`;
+                                                        connection.query(sql, (err, result) => {
+                                                            if (err) {
+                                                                connection.rollback();
+                                                                res.json({ code: 400, data: err.message })
+                                                            } else {
+                                                                sql = `UPDATE ambassador_payment SET amount = amount + ${totalFee} WHERE ambassador_id=${ambassador_id}`;
+                                                                connection.query(sql, (err, result) => {
+                                                                    if (err) {
+                                                                        connection.rollback();
+                                                                        res.json({ code: 400, data: err.message })
+                                                                    } else {
+                                                                        connection.commit();
+                                                                        res.json({ code: 200, data: CONSTANTS.TEAM_REGISTRATION })
+                                                                    }
+                                                                });
+                                                            }
+                                                        })
+                                                    } else {
+                                                        sql = `UPDATE ambassador_payment SET amount = amount + ${totalFee} WHERE ambassador_id=${ambassador_id}`;
+                                                        connection.query(sql, (err, result) => {
+                                                            if (err) {
+                                                                connection.rollback();
+                                                                res.json({ code: 400, data: err.message })
+                                                            } else {
+                                                                connection.commit();
+                                                                res.json({ code: 200, data: CONSTANTS.TEAM_REGISTRATION })
+                                                            }
+                                                        });
+                                                    }
+                                                }
+                                            });
                                         }
                                     });
                                 } else {
