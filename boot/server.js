@@ -1,6 +1,6 @@
 const express = require("express");
 const { initializeApp } = require("firebase/app");
-const { boot } = require('../utils/utils');
+const { boot, check } = require('../utils/utils');
 const cors = require('cors');
 const { login, register, getUser, teamRegister, getUsers, getUserCompetitions, getUserByEmail } = require('../controllers/user');
 const { getAmbassadorDetails, isPaymentCollected, collectPayment } = require('../controllers/ambassador');
@@ -19,6 +19,8 @@ app.use(express.json());
 app.use(cors({
     origin: '*'
 }));
+
+app.get('/', check)
 
 app.post('/login', login);
 
