@@ -40,7 +40,7 @@ app.put('/paymentCollected/:ambassador_id', isPaymentCollected);
 
 app.get('/getUserCompetitions/:userid', getUserCompetitions);
 
-app.get('/getCompetitions', getCompetitions)
+app.get('/getCompetitions/:type', getCompetitions)
 
 app.get('/getACompetition/:compid', getACompetition);
 

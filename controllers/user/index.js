@@ -1,10 +1,9 @@
-const { createUserWithEmailAndPassword, sendEmailVerification, getAuth, signInWithEmailAndPassword, sign } = require('firebase/auth');
+const { createUserWithEmailAndPassword, sendEmailVerification, getAuth, signInWithEmailAndPassword, deleteUser } = require('firebase/auth');
 const { CONSTANTS, PAYMENT, connection } = require('../index')
 
 exports.login = (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log(email, password);
         const auth = getAuth();
         signInWithEmailAndPassword(auth, email, password)
             .then(async (cred) => {
@@ -29,16 +28,17 @@ exports.login = (req, res) => {
 
 exports.register = (req, res) => {
     try {
-        const { email, password, contact, university, fullname } = req.body;
+        const { email, password, contact, university, fullname, isAmbassador } = req.body;
         const auth = getAuth();
         createUserWithEmailAndPassword(auth, email, password)
             .then(async (cred) => {
                 sendEmailVerification(cred.user)
                     .then(() => {
-                        const sql = `INSERT INTO User(fullname, contact, email, university) VALUES('${fullname}', '${contact}', '${email}', '${university}');`;
+                        const sql = `INSERT INTO User(fullname, contact, email, university, isAmbassador) VALUES('${fullname}', '${contact}', '${email}', '${university}', ${isAmbassador});`;
                         connection.query(sql, (err, result) => {
                             if (err) {
                                 res.json({ code: 400, data: err.message });
+                                deleteUser(cred.user);
                             } else {
                                 res.json({ code: 200, data: CONSTANTS.REGISTRATION_SUCCESS });
                             }
@@ -91,14 +91,14 @@ exports.teamRegister = (req, res) => {
                 connection.rollback();
                 res.json({ code: 400, data: err.message })
             } else {
-                sql = `INSERT INTO payment VALUES('${PAYMENT.PENDING}', '${paymentMethod}', '${paymentReference}', ${compId}, ${teamLead});`;
+                sql = `INSERT INTO payment VALUES('${PAYMENT.PENDING}', '${paymentMethod}', '${paymentReference}', '${compId}', ${teamLead});`;
                 connection.query(sql, (err, result) => {
                     if (err) {
                         connection.rollback();
                         res.json({ code: 400, data: err.message })
                     } else {
                         // payment api
-                        sql = `INSERT INTO registrations(totalfee, competitionid, teamlead, qrcode) VALUES(${totalFee}, ${compId}, ${teamLead}, ${'QRCODE'});`
+                        sql = `INSERT INTO registrations(totalfee, competitionid, teamlead, qrcode) VALUES(${totalFee}, '${compId}', ${teamLead}, ${'QRCODE'});`
                         connection.query(sql, (err, result) => {
                             if (err) {
                                 connection.rollback();
@@ -173,7 +173,7 @@ exports.teamRegister = (req, res) => {
 exports.getUserCompetitions = (req, res) => {
     try {
         const { userid } = req.params;
-        const sql = `SELECT * FROM User U INNER JOIN team T ON U.userid = T.teamlead INNER JOIN registrations R ON T.teamlead = R.competitionid INNER JOIN competition C ON R.teamlead = C.compid WHERE U.userid = ${userid};`;
+        const sql = `SELECT * FROM User U INNER JOIN team T ON U.userid = T.teamlead INNER JOIN registrations R ON T.teamlead = R.teamlead INNER JOIN competition C ON R.competitionid = C.compid WHERE U.userid = ${userid};`;
         connection.query(sql, (err, results) => {
             if (err) {
                 res.json({ code: 400, data: err.message });
