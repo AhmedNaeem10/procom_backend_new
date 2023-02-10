@@ -85,7 +85,7 @@ exports.teamRegister = (req, res) => {
     try {
         const { teamLead, teamName, numOfMembers, compId, totalFee, paymentMethod, paymentReference, ambassador_id } = req.body;
         connection.beginTransaction();
-        let sql = `INSERT INTO team VALUES(${numOfMembers}, '${teamName}', '${teamLead}');`;
+        let sql = `INSERT INTO team(numofmembers, teamname, teamlead) VALUES(${numOfMembers}, '${teamName}', '${teamLead}');`;
         connection.query(sql, (err, result) => {
             if (err) {
                 connection.rollback();
