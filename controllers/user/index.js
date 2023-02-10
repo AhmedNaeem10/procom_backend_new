@@ -124,16 +124,8 @@ exports.teamRegister = (req, res) => {
                                                                 connection.rollback();
                                                                 res.json({ code: 400, data: err.message })
                                                             } else {
-                                                                sql = `UPDATE ambassador_payment SET amount = amount + ${totalFee} WHERE ambassador_id=${ambassador_id}`;
-                                                                connection.query(sql, (err, result) => {
-                                                                    if (err) {
-                                                                        connection.rollback();
-                                                                        res.json({ code: 400, data: err.message })
-                                                                    } else {
-                                                                        connection.commit();
-                                                                        res.json({ code: 200, data: CONSTANTS.TEAM_REGISTRATION })
-                                                                    }
-                                                                });
+                                                                connection.commit();
+                                                                res.json({ code: 200, data: CONSTANTS.TEAM_REGISTRATION })
                                                             }
                                                         })
                                                     } else {
