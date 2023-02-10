@@ -91,13 +91,12 @@ exports.teamRegister = (req, res) => {
                 connection.rollback();
                 res.json({ code: 400, data: err.message })
             } else {
-                sql = `INSERT INTO payment VALUES('${PAYMENT.PENDING}', '${paymentMethod}', '${paymentReference}', '${compId}', ${teamLead});`;
+                sql = `INSERT INTO payment(paymentstatus, paymentmethod, paymentreference, competitionid, teamLead) VALUES('${PAYMENT.PENDING}', '${paymentMethod}', '${paymentReference}', '${compId}', ${teamLead});`;
                 connection.query(sql, (err, result) => {
                     if (err) {
                         connection.rollback();
                         res.json({ code: 400, data: err.message })
                     } else {
-                        // payment api
                         sql = `INSERT INTO registrations(totalfee, competitionid, teamlead, qrcode) VALUES(${totalFee}, '${compId}', ${teamLead}, ${'QRCODE'});`
                         connection.query(sql, (err, result) => {
                             if (err) {
