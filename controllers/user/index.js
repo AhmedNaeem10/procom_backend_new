@@ -151,7 +151,7 @@ exports.teamRegister = (req, res) => {
                                                             }
                                                         })
                                                     }
-                                                    sql = `UPDATE ambassador_payment SET amount = amount + ${totalFee*numOfMembers} WHERE ambassador_id=${ambassador_id}`;
+                                                    sql = `UPDATE ambassador_payment SET amount = amount + ${totalFee < 800 ? totalFee*numOfMembers : totalFee} WHERE ambassador_id=${ambassador_id}`;
                                                     connection.query(sql, async (err, result) => {
                                                         if (err) {
                                                             connection.rollback();
