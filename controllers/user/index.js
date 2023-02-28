@@ -163,21 +163,6 @@ exports.teamRegister = (req, res) => {
                                                                     connection.rollback();
                                                                     res.json({ code: 400, data: err.message })
                                                                 }else{
-                        //                                             const subject = "Procom'23 Team Registration";
-                        //                                             const body = `Dear Team ${teamName},
-                        
-                        // We hope this email finds you well. On behalf of the ProCom team, we would like to formally confirm your successful registration for ProCom 2023.
-                        
-                        // Your participation in this event is greatly appreciated and we are looking forward to having you join us. As a reminder, ProCom 2023 will be held on 9th & 10th March 2023.
-                        
-                        // If you have any questions or concerns, please do not hesitate to reach out to us at procom.net@nu.edu.pk
-                        
-                        // We look forward to seeing you soon!
-                        
-                        // Best regards,
-                        // Procom'23 Organizing Committee`;
-                        
-                        //                                             await sendEmail(result[0].email, subject, body);
                                                                     const Email = result[0].email;
                                                                     const Name = result[0].fullname;
                                                                     sql = `SELECT * FROM competition WHERE compid='${compId}'`
@@ -186,9 +171,14 @@ exports.teamRegister = (req, res) => {
                                                                             connection.rollback();
                                                                             res.json({code: 400, data: err.message});
                                                                         }else{
-                                                                            let response = await axios.post("http://fouzanasif.pythonanywhere.com/mail", {Email, Name, TName: teamName, Participants: numOfMembers, Competitions: result[0].compname, HeadComp: result[0].CompType});
-                                                                            connection.commit();
-                                                                            res.json({ code: 200, data: CONSTANTS.TEAM_REGISTRATION })
+                                                                            if(result[0].Active){
+                                                                                let response = await axios.post("http://fouzanasif.pythonanywhere.com/mail", {Email, Name, TName: teamName, Participants: numOfMembers, Competitions: result[0].compname, HeadComp: result[0].CompType});
+                                                                                connection.commit();
+                                                                                res.json({ code: 200, data: CONSTANTS.TEAM_REGISTRATION })
+                                                                            }else{
+                                                                                connection.rollback();
+                                                                                res.json({code: 400, data: "No seats available!"});
+                                                                            }
                                                                         }
                                                                     })
                                                                 }
@@ -206,21 +196,6 @@ exports.teamRegister = (req, res) => {
                                             connection.rollback();
                                             res.json({ code: 400, data: err.message })
                                         }else{
-//                                             const subject = "Procom'23 Team Registration";
-//                                             const body = `Dear Team ${teamName},
-
-// We hope this email finds you well. On behalf of the ProCom team, we would like to formally confirm your successful registration for ProCom 2023.
-
-// Your participation in this event is greatly appreciated and we are looking forward to having you join us. As a reminder, ProCom 2023 will be held on 9th & 10th March 2023.
-
-// If you have any questions or concerns, please do not hesitate to reach out to us at procom.net@nu.edu.pk
-
-// We look forward to seeing you soon!
-
-// Best regards,
-// Procom'23 Organizing Committee`;
-
-//                                             await sendEmail(result[0].email, subject, body);
                                             const Email = result[0].email;
                                             const Name = result[0].fullname;
                                             sql = `SELECT * FROM competition WHERE compid='${compId}'`
